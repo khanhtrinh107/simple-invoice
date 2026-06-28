@@ -2,13 +2,11 @@ export const APP_NAME = "SimpleInvoice";
 export const APP_DESCRIPTION = "Simple Invoice Management";
 
 export const INVOICE_STATUS_LABELS: Record<string, string> = {
-  DRAFT: "Draft",
-  PENDING: "Pending",
-  SENT: "Sent",
-  PAID: "Paid",
-  OVERDUE: "Overdue",
-  CANCELLED: "Cancelled",
-  VOID: "Void",
+  Due: "Due",
+  Overdue: "Overdue",
+  Paid: "Paid",
+  Cancelled: "Cancelled",
+  Rejected: "Rejected",
 };
 
 export const CURRENCY_SYMBOLS: Record<string, string> = {

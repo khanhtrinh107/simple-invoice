@@ -93,6 +93,47 @@ export async function exchangeToken(
 }
 
 /**
+ * Refresh an access_token using a refresh_token grant.
+ * The WSO2 token endpoint accepts `grant_type=refresh_token` with the
+ * stored refresh_token in the body. Returns the raw OIDC response so callers
+ * can persist the new tokens.
+ */
+export async function refreshToken(
+  refreshTokenValue: string
+): Promise<OidcTokenResponse> {
+  const params = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshTokenValue,
+    client_id: authConfig.clientId,
+    client_secret: authConfig.clientSecret,
+    scope: "openid",
+  });
+
+  const response = await fetch(authConfig.tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let parsed: { error?: string } | null = null;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // non-JSON body
+    }
+    const error = parsed?.error ?? text;
+    throw new Error(`Token refresh failed: ${response.status} ${error}`);
+  }
+
+  return response.json() as Promise<OidcTokenResponse>;
+}
+
+/**
  * Map the OIDC token response to the camelCase shape used inside the app.
  * Keeps all token fields (access/refresh/id) so they can be persisted.
  */

@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
-import react from "@testing-library/react";
+// Side-effect import: registers the React Testing Library plugin with Vitest
+// so React components are transformed correctly in test files.
+import "@testing-library/react";
 import path from "path";
 
 export default defineConfig({

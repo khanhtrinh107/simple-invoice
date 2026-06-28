@@ -20,10 +20,11 @@ const NAV_ITEMS: NavItem[] = [
 
 interface SidebarNavProps {
   className?: string;
+  collapsed?: boolean;
   onNavigate?: () => void;
 }
 
-export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
+export function SidebarNav({ className, collapsed, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
@@ -43,8 +44,10 @@ export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
             href={item.href}
             onClick={onNavigate}
             aria-current={isActive ? "page" : undefined}
+            title={collapsed ? item.label : undefined}
             className={cn(
-              "group flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors outline-none",
+              "group flex items-center gap-2 rounded-md py-2 text-sm font-medium transition-colors outline-none",
+              collapsed ? "justify-center px-0" : "px-2.5",
               "focus-visible:ring-2 focus-visible:ring-ring/50",
               isActive
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -59,7 +62,7 @@ export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
                   : "text-muted-foreground group-hover:text-sidebar-accent-foreground"
               )}
             />
-            <span className="truncate">{item.label}</span>
+            {!collapsed ? <span className="truncate">{item.label}</span> : null}
           </Link>
         );
       })}

@@ -15,8 +15,11 @@ export interface CustomerContact {
 
 export interface Customer {
   id?: string;
-  name: string;
-  contact: CustomerContact;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  contact?: CustomerContact;
   address?: CustomerAddress;
 }
 
@@ -49,22 +52,25 @@ export interface Extension {
 
 export interface InvoiceItem {
   id?: string;
-  name: string;
+  name?: string;
   description?: string;
-  quantity: number;
-  rate: number;
-  amount: number;
+  quantity?: number;
+  rate?: number;
+  amount?: number;
   itemOrder?: number;
 }
 
 export type InvoiceStatus =
-  | "DRAFT"
-  | "PENDING"
-  | "SENT"
-  | "PAID"
-  | "OVERDUE"
-  | "CANCELLED"
-  | "VOID";
+  | "Due"
+  | "Overdue"
+  | "Paid"
+  | "Cancelled"
+  | "Rejected";
+
+export interface StatusObject {
+  key: string;
+  value?: string | boolean;
+}
 
 export type Currency =
   | "USD"
@@ -88,15 +94,34 @@ export type SortOrder = "ASCENDING" | "DESCENDING";
 
 export interface Invoice {
   id: string;
+  invoiceId?: string;
   invoiceNumber: string;
-  status: InvoiceStatus;
+  invoiceReference?: string;
+  referenceNo?: string;
+  status: StatusObject[];
+  subStatus?: StatusObject[];
+  type?: string;
+  version?: string;
   currency: Currency;
+  currencySymbol?: string;
+  invoiceSubTotal?: number;
+  totalDiscount?: number;
+  totalTax?: number;
+  invoiceGrossTotal?: number;
   amount: number;
   taxAmount?: number;
   totalAmount: number;
+  totalPaid?: number;
+  balanceAmount?: number;
+  description?: string;
   invoiceDate: string;
   dueDate: string;
   customer: Customer;
+  merchant?: {
+    id: string;
+    name: string;
+    addresses?: CustomerAddress[];
+  };
   bankAccount?: BankAccount;
   items: InvoiceItem[];
   notes?: string;
@@ -104,8 +129,16 @@ export interface Invoice {
   documents?: Document[];
   customFields?: CustomField[];
   extensions?: Extension[];
+  numberOfDocuments?: number;
+  payments?: Array<{
+    id?: string;
+    amount?: number;
+    paymentDate?: string;
+    [key: string]: unknown;
+  }>;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  createdBy?: string;
 }
 
 export interface InvoiceListParams {

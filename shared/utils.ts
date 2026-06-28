@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { DISPLAY_DATE_FORMAT } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,8 +43,30 @@ export function formatCurrency(
   }
 }
 
-export function calculateItemAmount(quantity: number, rate: number): number {
-  return Math.round(quantity * rate * 100) / 100;
+/**
+ * Formats a balance amount with parentheses for negative values.
+ * Matches the Figma design: (-$270.00 CAD) for negative, $270.00 CAD for positive.
+ */
+export function formatBalance(
+  amount: number | undefined | null,
+  currency: string
+): string {
+  const value = amount ?? 0;
+  if (value < 0) {
+    const absFormatted = formatCurrency(Math.abs(value), currency);
+    return `(${absFormatted})`;
+  }
+  return formatCurrency(value, currency);
+}
+
+export function calculateItemAmount(
+  quantity: number | undefined | null,
+  rate: number | undefined | null
+): number {
+  const q = Number(quantity);
+  const r = Number(rate);
+  if (!Number.isFinite(q) || !Number.isFinite(r)) return 0;
+  return Math.round(q * r * 100) / 100;
 }
 
 export function debounce<T extends (...args: unknown[]) => unknown>(

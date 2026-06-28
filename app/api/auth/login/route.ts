@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  decodeIdToken,
   exchangeToken,
   extractOrgToken,
   fetchUserProfile,
-  profileFromIdToken,
 } from "@/features/auth/api/auth-api";
 import { setOidcTokenCookies } from "@/lib/cookies";
 import { loginSchema } from "@/shared/validators";
@@ -42,34 +40,30 @@ export async function POST(request: Request) {
   }
 
   // Derive user from id_token first (cheaper + signed by IdP),
-  // then enrich with /users/me if available.
+  // then enrich with /users/me to get the real org token from memberships.
   let profile;
   try {
-    if (tokenResponse.id_token) {
-      const claims = decodeIdToken(tokenResponse.id_token);
-      profile = profileFromIdToken(claims);
-    }
+    profile = await fetchUserProfile(tokenResponse.access_token);
   } catch (err) {
-    console.warn("[login] failed to decode id_token:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to load user profile";
+    return NextResponse.json({ error: message }, { status: 401 });
   }
 
-  if (!profile) {
-    try {
-      profile = await fetchUserProfile(tokenResponse.access_token);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to load user profile";
-      return NextResponse.json({ error: message }, { status: 401 });
-    }
-  }
-
-  // Org token may live in memberships[0].token from /users/me;
-  // when we only have id_token claims we leave it empty.
+  // Extract the org/membership token. This is required for all downstream
+  // invoice API calls — the id_token only carries org metadata, not the token.
   let orgToken: string | undefined;
   try {
     orgToken = extractOrgToken(profile);
   } catch {
     orgToken = undefined;
+  }
+
+  if (!orgToken) {
+    return NextResponse.json(
+      { error: "No organisation membership found for this account" },
+      { status: 401 }
+    );
   }
 
   try {

@@ -102,6 +102,18 @@ export async function getRefreshToken(): Promise<string | null> {
   return cookieStore.get(AUTH_TOKEN_COOKIES.REFRESH_TOKEN)?.value ?? null;
 }
 
+/**
+ * True only if we have both an access token AND a refresh token. Used by
+ * login-page guards so they don't bounce a user with a stale access token
+ * straight back into the dashboard.
+ */
+export async function hasValidSession(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get(AUTH_TOKEN_COOKIES.ACCESS_TOKEN)?.value;
+  const refreshToken = cookieStore.get(AUTH_TOKEN_COOKIES.REFRESH_TOKEN)?.value;
+  return Boolean(accessToken) && Boolean(refreshToken);
+}
+
 export async function clearAuthCookies(): Promise<void> {
   const cookieStore = await cookies();
 
@@ -111,4 +123,51 @@ export async function clearAuthCookies(): Promise<void> {
       maxAge: 0,
     });
   }
+}
+
+/**
+ * Attempt a silent OIDC token refresh using the stored refresh_token cookie.
+ * Returns the new { accessToken, orgToken } if successful, or null if no
+ * refresh_token is available or the refresh itself fails.
+ *
+ * On success the new tokens are immediately persisted back into cookies.
+ * On failure the function returns null — callers must treat that as an
+ * authentication failure.
+ */
+export async function refreshAccessToken(): Promise<AuthCookies | null> {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get(AUTH_TOKEN_COOKIES.REFRESH_TOKEN)?.value;
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  // Dynamically import auth-api to avoid pulling server-only code into
+  // client bundles. This function is only ever called from route handlers.
+  const { refreshToken: doRefresh } = await import("@/features/auth/api/auth-api");
+
+  let tokenResponse: { access_token: string; expires_in?: number };
+  try {
+    tokenResponse = await doRefresh(refreshToken);
+  } catch {
+    return null;
+  }
+
+  // Refresh succeeded — persist the new access_token back to the cookie so
+  // subsequent requests don't need another round-trip.  We intentionally do
+  // NOT update the refresh_token here even if the server issued a new one;
+  // we leave it as-is.
+  const newAccessToken = tokenResponse.access_token;
+  const newExpiresIn = tokenResponse.expires_in ?? DEFAULT_ACCESS_MAX_AGE;
+
+  cookieStore.set(AUTH_TOKEN_COOKIES.ACCESS_TOKEN, newAccessToken, {
+    ...AUTH_COOKIE_OPTIONS,
+    maxAge: newExpiresIn,
+  });
+
+  // The org_token is stable across token refreshes (it comes from the
+  // membership service, not WSO2), so we preserve whatever was already set.
+  const existingOrgToken = cookieStore.get(AUTH_TOKEN_COOKIES.ORG_TOKEN)?.value ?? "";
+
+  return { accessToken: newAccessToken, orgToken: existingOrgToken };
 }

@@ -107,7 +107,8 @@ describe("createInvoiceSchema", () => {
   });
 
   it("fails when invoiceNumber is missing", () => {
-    const { invoiceNumber: _, ...invoice } = validInvoice;
+    const { invoiceNumber: _ignored, ...invoice } = validInvoice;
+    void _ignored;
     const result = createInvoiceSchema.safeParse(invoice);
     expect(result.success).toBe(false);
   });
@@ -140,13 +141,22 @@ describe("createInvoiceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("fails when item quantity is less than 1", () => {
+  it("fails when item quantity is negative", () => {
     const invoice = {
       ...validInvoice,
-      items: [{ ...validInvoice.items[0], quantity: 0 }],
+      items: [{ ...validInvoice.items[0], quantity: -1 }],
     };
     const result = createInvoiceSchema.safeParse(invoice);
     expect(result.success).toBe(false);
+  });
+
+  it("accepts zero quantity and zero rate when name is filled", () => {
+    const invoice = {
+      ...validInvoice,
+      items: [{ name: "Free service", quantity: 0, rate: 0 }],
+    };
+    const result = createInvoiceSchema.safeParse(invoice);
+    expect(result.success).toBe(true);
   });
 
   it("fails when item rate is negative", () => {
@@ -158,13 +168,13 @@ describe("createInvoiceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("fails when item name is missing", () => {
+  it("allows omitting item name", () => {
     const invoice = {
       ...validInvoice,
-      items: [{ ...validInvoice.items[0], name: "" }],
+      items: [{ ...validInvoice.items[0], name: undefined }],
     };
     const result = createInvoiceSchema.safeParse(invoice);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("fails when invoiceDate is not in YYYY-MM-DD format", () => {
@@ -185,13 +195,17 @@ describe("createInvoiceSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("fails when no items are provided", () => {
+  it("allows an empty items list since the API does not require line items", () => {
     const invoice = { ...validInvoice, items: [] };
     const result = createInvoiceSchema.safeParse(invoice);
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toBe("At least one item is required");
-    }
+    expect(result.success).toBe(true);
+  });
+
+  it("allows omitting items entirely", () => {
+    const { items: _ignored, ...invoice } = validInvoice;
+    void _ignored;
+    const result = createInvoiceSchema.safeParse(invoice);
+    expect(result.success).toBe(true);
   });
 
   it("allows optional fields to be omitted", () => {

@@ -1,6 +1,6 @@
 import type { LoginCredentials, LoginResponse } from "@/features/auth/types/auth.types";
 
-interface AuthUser {
+export interface AuthUser {
   id: string;
   username: string;
   email: string;

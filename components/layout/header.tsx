@@ -20,13 +20,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LogOutIcon, UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function getInitials(firstName: string, lastName: string): string {
-  const first = firstName?.trim()?.charAt(0) ?? "";
-  const last = lastName?.trim()?.charAt(0) ?? "";
-  const combined = `${first}${last}`.trim();
-  return combined ? combined.toUpperCase() : "U";
-}
-
 function getDisplayName(
   firstName: string,
   lastName: string,
@@ -61,13 +54,13 @@ function HeaderUserMenu({ className }: HeaderUserMenuProps) {
     user.lastName,
     user.username
   );
-  const initials = getInitials(user.firstName, user.lastName);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "group flex shrink-0 items-center gap-2 rounded-md px-1 py-1 outline-none",
+          "group flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1 py-1 outline-none transition-colors",
+          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
           "focus-visible:ring-2 focus-visible:ring-ring/50",
           "data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground",
           className
@@ -78,7 +71,9 @@ function HeaderUserMenu({ className }: HeaderUserMenuProps) {
           {user.avatarUrl ? (
             <AvatarImage src={user.avatarUrl} alt={displayName} />
           ) : null}
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback>
+            <UserIcon className="size-4 text-muted-foreground" />
+          </AvatarFallback>
         </Avatar>
         <span className="hidden text-sm font-medium text-foreground sm:inline">
           {displayName}
@@ -86,14 +81,11 @@ function HeaderUserMenu({ className }: HeaderUserMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={6} className="min-w-56">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">
-              {displayName}
-            </span>
-            <span className="text-xs font-normal text-muted-foreground">
-              {user.email}
-            </span>
-          </DropdownMenuLabel>
+<DropdownMenuLabel className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium text-foreground">
+            {displayName}
+          </span>
+        </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled>
             <UserIcon />

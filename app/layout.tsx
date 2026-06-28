@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { FetchInterceptorInstaller } from "@/components/system/fetch-interceptor-installer";
 import { APP_DESCRIPTION, APP_NAME } from "@/shared/constants";
 
 const poppins = Poppins({
@@ -17,7 +18,6 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
-
 export const metadata: Metadata = {
   title: {
     default: APP_NAME,
@@ -37,7 +37,8 @@ export default function RootLayout({
       className={`${poppins.variable} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
+      <body className="min-h-full flex flex-col bg-background text-foreground font-heading">
+        <FetchInterceptorInstaller />
         {children}
         <Toaster richColors closeButton position="top-right" />
       </body>

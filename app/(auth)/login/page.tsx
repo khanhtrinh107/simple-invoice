@@ -10,13 +10,11 @@ import {
 import { LoginForm } from "@/features/auth/components/login-form";
 import { BrandMark } from "@/components/layout/brand-mark";
 import { LoginHeroArt } from "@/components/layout/login-hero-art";
-import { cn } from "@/lib/utils";
-import { getAuthTokens } from "@/lib/cookies";
+import { hasValidSession } from "@/lib/cookies";
 import { ROUTES } from "@/shared/constants";
 
 export default async function LoginPage() {
-  const tokens = await getAuthTokens();
-  if (tokens) {
+  if (await hasValidSession()) {
     redirect(ROUTES.INVOICES);
   }
 

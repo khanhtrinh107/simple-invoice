@@ -112,6 +112,21 @@ describe("calculateItemAmount", () => {
   it("rounds to two decimal places", () => {
     expect(calculateItemAmount(3, 33.333)).toBe(100);
   });
+
+  it("treats undefined as 0", () => {
+    expect(calculateItemAmount(undefined, 50)).toBe(0);
+    expect(calculateItemAmount(2, undefined)).toBe(0);
+  });
+
+  it("treats null as 0", () => {
+    expect(calculateItemAmount(null, 50)).toBe(0);
+    expect(calculateItemAmount(2, null)).toBe(0);
+  });
+
+  it("treats NaN as 0", () => {
+    expect(calculateItemAmount(Number.NaN, 50)).toBe(0);
+    expect(calculateItemAmount(2, Number.NaN)).toBe(0);
+  });
 });
 
 describe("capitalizeFirst", () => {

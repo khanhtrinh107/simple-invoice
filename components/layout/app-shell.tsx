@@ -12,7 +12,7 @@ import { Header } from "@/components/layout/header";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { APP_NAME, ROUTES } from "@/shared/constants";
 import { cn } from "@/lib/utils";
-import { XIcon } from "lucide-react";
+import { PanelLeftCloseIcon, PanelLeftOpenIcon, XIcon } from "lucide-react";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -20,6 +20,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
 
   // Auto-close mobile drawer when viewport grows past the md breakpoint.
   React.useEffect(() => {
@@ -48,13 +49,19 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex min-h-svh w-full bg-background text-foreground">
-      {/* Desktop sidebar — collapses to icon-only at xl */}
+      {/* Desktop sidebar — collapses to icon-only when toggled */}
       <aside
         aria-label="Sidebar"
-        className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar md:flex md:flex-col"
+        className={cn(
+          "hidden shrink-0 border-r border-sidebar-border bg-sidebar transition-[width] duration-200 md:flex md:flex-col",
+          collapsed ? "w-16" : "w-64"
+        )}
       >
-        <SidebarBrand />
-        <SidebarContent />
+        <SidebarBrand
+          collapsed={collapsed}
+          onToggle={() => setCollapsed((prev) => !prev)}
+        />
+        <SidebarContent collapsed={collapsed} />
       </aside>
 
       {/* Mobile drawer */}
@@ -89,7 +96,7 @@ export function AppShell({ children }: AppShellProps) {
           showMenuButton
           onMenuClick={() => setMobileOpen(true)}
         />
-        <main className="flex-1 overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 md:px-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 md:px-8">
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
       </div>
@@ -97,29 +104,64 @@ export function AppShell({ children }: AppShellProps) {
   );
 }
 
-function SidebarBrand() {
+function SidebarBrand({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-4">
+    <div
+      className={cn(
+        "flex h-14 shrink-0 items-center border-b border-sidebar-border",
+        collapsed ? "justify-center px-2" : "justify-between px-4"
+      )}
+    >
       <Link
         href={ROUTES.INVOICES}
         aria-label={`${APP_NAME} home`}
-        className="flex items-center"
+        className={cn(
+          "flex items-center overflow-hidden transition-[max-width,opacity] duration-200",
+          collapsed ? "max-w-0 opacity-0 pointer-events-none" : "max-w-full opacity-100"
+        )}
       >
         <BrandMark variant="dark" className="h-7" />
       </Link>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-pressed={collapsed}
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
+        {collapsed ? (
+          <PanelLeftOpenIcon className="size-4" />
+        ) : (
+          <PanelLeftCloseIcon className="size-4" />
+        )}
+      </button>
     </div>
   );
 }
 
 interface SidebarContentProps {
   className?: string;
+  collapsed?: boolean;
   onNavigate?: () => void;
 }
 
-function SidebarContent({ className, onNavigate }: SidebarContentProps) {
+function SidebarContent({ className, collapsed, onNavigate }: SidebarContentProps) {
   return (
-    <div className={cn("flex flex-1 flex-col gap-6 overflow-y-auto p-4", className)}>
-      <SidebarNav onNavigate={onNavigate} />
+    <div
+      className={cn(
+        "flex flex-1 flex-col gap-6 overflow-y-auto",
+        collapsed ? "p-2" : "p-4",
+        className
+      )}
+    >
+      <SidebarNav collapsed={collapsed} onNavigate={onNavigate} />
     </div>
   );
 }

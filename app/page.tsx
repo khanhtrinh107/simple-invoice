@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { getAuthTokens } from "@/lib/cookies";
+import { hasValidSession } from "@/lib/cookies";
 import { ROUTES } from "@/shared/constants";
 
 export default async function HomePage() {
-  const tokens = await getAuthTokens();
-  redirect(tokens ? ROUTES.INVOICES : ROUTES.LOGIN);
+  redirect((await hasValidSession()) ? ROUTES.INVOICES : ROUTES.LOGIN);
 }

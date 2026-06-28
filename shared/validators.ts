@@ -47,10 +47,17 @@ const bankAccountSchema = z.object({
 
 const invoiceItemSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Item name is required"),
+  name: z.string().optional(),
   description: z.string().optional(),
-  quantity: z.number().int().min(1, "Quantity must be at least 1"),
-  rate: z.number().min(0, "Rate cannot be negative"),
+  quantity: z
+    .number()
+    .int("Quantity must be a whole number")
+    .min(0, "Quantity cannot be negative")
+    .default(1),
+  rate: z
+    .number()
+    .min(0, "Rate cannot be negative")
+    .default(0),
   amount: z.number().min(0).optional(),
   itemOrder: z.number().int().optional(),
 });
@@ -61,10 +68,7 @@ export const createInvoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   customer: customerSchema,
   bankAccount: bankAccountSchema.optional(),
-  items: z
-    .array(invoiceItemSchema)
-    .min(1, "At least one item is required")
-    .max(1, "Only one item is allowed"),
+  items: z.array(invoiceItemSchema).optional(),
   invoiceDate: z
     .string()
     .regex(dateRegex, "Invoice date must be in YYYY-MM-DD format"),
@@ -96,5 +100,5 @@ export const createInvoiceSchema = z.object({
   terms: z.string().optional(),
 });
 
-export type CreateInvoiceSchemaInput = z.infer<typeof createInvoiceSchema>;
-export type CreateInvoiceSchemaOutput = z.infer<typeof createInvoiceSchema>;
+export type CreateInvoiceSchemaInput = z.input<typeof createInvoiceSchema>;
+export type CreateInvoiceSchemaOutput = z.output<typeof createInvoiceSchema>;
