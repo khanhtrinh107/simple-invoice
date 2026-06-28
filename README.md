@@ -321,8 +321,8 @@ All variables below are **server-only** (no `NEXT_PUBLIC_` prefix). They are val
 
 | Variable | Purpose | Example (sandbox) |
 | --- | --- | --- |
-| `AUTH_CLIENT_ID` | OAuth2 client id for the WSO2 identity server. | `qlsGKsgR3Qt4M_oSAvRq2yChEpUa` |
-| `AUTH_CLIENT_SECRET` | OAuth2 client secret. **Server-only — never bundled to the client.** | `GE7sxz9a4J6bw9LyPxkr4syV6pdLiMvYu2o_fDfnWgUa` |
+| `AUTH_CLIENT_ID` | OAuth2 client id for the WSO2 identity server. | `qlsGK` |
+| `AUTH_CLIENT_SECRET` | OAuth2 client secret. **Server-only — never bundled to the client.** | `fDfnWgUa` |
 | `AUTH_API_URL` | Full URL of the WSO2 `/oauth2/token` endpoint. | `https://is-wso2-dev.101digital.io/t/101digital.core/oauth2/token` |
 | `MEMBERSHIP_API_URL` | Base URL of the membership service. `fetchUserProfile` appends `/users/me`. | `https://api-neobank-dev.101digital.io/membership-service/1.0.0` |
 | `INVOICE_API_URL` | Base URL of the invoice service. `listInvoices` / `createInvoice` append `/invoices`. | `https://api-neobank-dev.101digital.io/invoice-service/1.0.0` |
